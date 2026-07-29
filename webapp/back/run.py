@@ -44,7 +44,6 @@ def websocket_route(ws):
     sample_width = 2
     frame_rate = 16000
     
-    
     random_uuid = uuid.uuid4()
 
     unique_file_path = str(random_uuid) + ".wav"
@@ -83,7 +82,6 @@ def websocket_route(ws):
                     print("DATA IS NULL")
                     if (current_time - not_Speech_Time) >= 10:
                         print("Timeout: No speech detected for over 10 seconds.")
-                        
                         ws.close(message=1000, reason="No speech for 10 seconds")
                         break
                     continue
