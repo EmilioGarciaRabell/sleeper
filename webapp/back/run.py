@@ -102,7 +102,6 @@ def websocket_route(ws):
                     ws.close(message="DATA NOT RECEIVED FOR MORE THAN 10 SECONDS")
     
     finally:
-        
         print("started queue")
         job = task_queue.enqueue('app.api.background_tasks.save_file', str(output_file_path))
         print(job.is_finished)
