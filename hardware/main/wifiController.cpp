@@ -20,6 +20,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
             break;
         case WStype_CONNECTED:
             Serial.printf("[WSc] Connected to url: %s\n", payload);
+            isConnected = true;
             break;
         case WStype_TEXT:
             Serial.printf("[WSc] Text payload: %s\n", payload);
