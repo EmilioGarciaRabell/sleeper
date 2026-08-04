@@ -1,0 +1,13 @@
+setuptools==69.5.1
+wheel
+Flask==3.0.3
+flask-sock==0.7.0
+redis==5.0.7
+rq==1.16.2
+torch==2.3.1
+torchaudio==2.3.1
+numpy==1.26.4
+git+https://github.com/openai/whisper.git@v20231117
+silero-vad==5.1.0
+SQLAlchemy==2.0.31
+Flask-SQLAlchemy==3.1.1
