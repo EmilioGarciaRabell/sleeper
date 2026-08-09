@@ -6,7 +6,7 @@ from datetime import date
 from app import db
 from app.models import Note
 import time
-
+from pathlib import Path
 
 model = whisper.load_model("medium")
 
@@ -19,6 +19,7 @@ def transcribe(file,insert_id):
     storage_dir = base_dir / "storage" / "transcription"
     file_name = str(insert_id) + ".txt"
     output_file_path = storage_dir / file_name
+    Path(output_file_path).parent.mkdir(parents=True, exist_ok=True)
     with open(output_file_path,"w") as output_file:
         output_file.write(output)
     data = db.get_or_404(Note,insert_id)
