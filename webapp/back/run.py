@@ -59,21 +59,18 @@ def websocket_route(ws):
     
     try:
         with wave.open(str(output_file_path), "wb") as output_file:
-            
             output_file.setnchannels(channels)
             output_file.setsampwidth(sample_width)
             output_file.setframerate(frame_rate)
-            
             
             print("Receiving data ...........")
             while True:
                 
                 try:
-                    
-                    data = ws.receive(timeout=1)
-                
+                    data = ws.receive(timeout=3)
                 except Exception as e:
                     print("error here")
+                    print(e)
                     data = None
                     
                 current_time = time.time()

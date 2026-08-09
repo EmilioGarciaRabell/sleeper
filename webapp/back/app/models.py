@@ -16,7 +16,8 @@ class Note(db.Model):
     def to_dict(self):
         data = {
             "id" : self.id,
-            "filename":self.filename,
+            "audio_file_location":self.audio_file_location,
+            "transcription_file_location":self.transcription_file_location,
             "date": self.date,
             "status": self.status
         }
