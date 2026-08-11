@@ -2,91 +2,84 @@
 #include "micController.h"
 #include "ledThreadController.h"
 
-
-int32_t samples[512];
+int16_t samples[512];
+size_t bytesRead = 0;
 const int button = 2;
-
+int led = 13;
 bool recording = false;
-
 bool first = true;
-
 int retries = 3;
 
+void toggleRecording() {
+  if (!digitalRead(button) && !recording) {
+    Serial.println("Button pressed! Starting recording...");
+    recording = true;
+    delay(500); // debounce
+  }
+}
+
 void setup() {
-
   pinMode(button, INPUT_PULLUP);
+  pinMode(led, OUTPUT);
 
-  Serial.begin(115200); 
+  Serial.begin(115200);
 
   setupMic();
   wifiSetup();
   ledThreadSetup();
-  
 }
 
 void loop() {
+  webSocket.loop();
 
-  changeColor(RED);
-  size_t bytesRead = 0;
-  currentAnimation = BREATH;
-
-  // Print only one time
-  if (first){
-    Serial.println("Wating for button...");
-    first = false;
+  if (serverStopRequested) {
+    recording = false;
+    serverStopRequested = false;
+    webSocket.disconnect();
+    Serial.println("Recording stopped by server timeout.");
   }
-
-  // Check if button was pressed
-  toggleRecording();
   
-  // If the button is pressed start recording and sending requests
-  while(recording){
-    // change LED status
+  toggleRecording();
+
+  if (recording) {
+    digitalWrite(led, LOW);
     changeColor(GREEN);
     currentAnimation = CIRCLE;
     first = true;
 
-    webSocket.loop();
-    
-    // If the socket is connected read the mic and send the bytes read
-    if (webSocket.isConnected()){    
-      
-      if(readMic(samples, sizeof(samples), &bytesRead)) {
-        // send data with client
-        if (bytesRead > 0){
-          sendAudioChunk(serverHost, (const uint8_t*)samples, bytesRead);
-        }
-      }
-
-      // retries = 3; // (Commented out)
-
-    }
-    else{
-      // --- RETRY LOGIC COMMENTED OUT FOR TESTING ---
-      /*
-      retries --;
+    if (!webSocket.isConnected()) {
+      retries--;
       Serial.println("Retrying connection...");
-      if (retries <= 0){
-        recording = false;
-        Serial.println("Connection Failed.");
+      if (!connectWebSocket()) {
+        if (retries <= 0) {
+          recording = false;
+          retries = 3;
+          Serial.println("Connection Failed.");
+        }
+        changeColor(PURPLE);
+        currentAnimation = BREATH;
+        delay(1000);
+        return; 
       }
-      changeColor(PURPLE);
-      currentAnimation = BREATH;
-      delay(1000);
-      */
+    }
+
+    retries = 3;
+
+    if (readMic(samples, sizeof(samples), &bytesRead)) {
+      if (bytesRead > 0) {
+        sendAudioChunk((const uint8_t*)samples, bytesRead);
+      }
+    }
+  } else {
+    digitalWrite(led, HIGH);
+    changeColor(RED);
+    currentAnimation = BREATH;
+
+    if (first) {
+      Serial.println("Wating for button...");
+      first = false;
     }
   }
- 
+
   delay(2);
-  // retries = 3; // (Commented out)
 }
-
-// Function to check the status of the button and change the recording state
-void toggleRecording(){
-  if (!digitalRead(button)){
-    Serial.println("Button pressed!");
-    recording = !recording;
-    delay(500);
-  }
-}
-

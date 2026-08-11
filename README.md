@@ -34,4 +34,15 @@ npm install
 npm run dev
 ```
 
+# Running With Docker
+
+It is possible to run a docker container with both the web server and the redis server for the arduino communication over web sockets.
+
+To do this correctly you must have Docker desktop installed, then open it. 
+The just run the following:
+
+```
+cd webapp
+docker compose up --build # if you made changes to the Docker setop or requirments.txt, remove the --build if you did not make any changes to those.
+```
 

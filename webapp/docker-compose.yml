@@ -2,37 +2,43 @@ services:
   redis:
     image: redis:alpine
     container_name: redis_server
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   web:
     build: .
     container_name: flask_app
-    restart: always
+    working_dir: /app/back
     ports:
       - "5000:5000"
-    working_dir: /app/back
     environment:
-      - FLASK_ENV=development
       - REDIS_URL=redis://redis:6379/0
+      - FLASK_ENV=development
     volumes:
       - .:/app
+      - whisper_cache:/root/.cache/whisper  # PERSISTENT CACHE
     depends_on:
-    - redis
+      redis:
+        condition: service_healthy
 
   rq_worker:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: rq_worker_app
-    restart: always
     working_dir: /app/back
     environment:
       - REDIS_URL=redis://redis:6379/0
     volumes:
       - .:/app
+      - whisper_cache:/root/.cache/whisper  # PERSISTENT CACHE
     command: rq worker --url redis://redis:6379/0
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
-
-
-      
+volumes:
+  whisper_cache:  # DEFINE VOLUME HERE

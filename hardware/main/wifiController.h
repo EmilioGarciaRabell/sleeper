@@ -14,12 +14,10 @@ extern const char* serverPath;
 extern WebSocketsClient webSocket;
 
 extern bool isConnected;
-
+extern bool serverStopRequested;
 
 void wifiSetup();
-void sendAudioChunk(
-    const char* serverUrl,
-    const uint8_t* data,
-    size_t len
-);
+bool connectWebSocket();
+void sendAudioChunk(const uint8_t* data, size_t len);
+
 #endif

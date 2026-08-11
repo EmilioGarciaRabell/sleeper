@@ -1,22 +1,20 @@
-#include "micController.h"
 #include <driver/i2s.h>
 
 #define I2S_PORT I2S_NUM_0
 
-#define PIN_BCK   18
-#define PIN_WS    17
-#define PIN_DATA  10
+#define PIN_BCK  18
+#define PIN_WS   17
+#define PIN_DATA 10
 
 #define SAMPLE_RATE 16000
 
-void setupMic()
-{
+void setupMic() {
     i2s_config_t config = {
         .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
         .sample_rate = SAMPLE_RATE,
         .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
         .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
-        .communication_format = I2S_COMM_FORMAT_STAND_I2S,//I2S_COMM_FORMAT_I2S,
+        .communication_format = I2S_COMM_FORMAT_STAND_I2S,
         .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
         .dma_buf_count = 8,
         .dma_buf_len = 512,
@@ -37,14 +35,18 @@ void setupMic()
     i2s_zero_dma_buffer(I2S_PORT);
 }
 
+bool readMic(void* buffer, size_t maxBytes, size_t* bytesRead) {
+    if (buffer == nullptr || bytesRead == nullptr) {
+        return false;
+    }
 
-bool readMic(void* buffer, size_t maxBytes, size_t* bytesRead)
-{
-    return i2s_read(
+    esp_err_t result = i2s_read(
         I2S_PORT,
         buffer,
         maxBytes,
         bytesRead,
         portMAX_DELAY
-    ) == ESP_OK;
+    );
+
+    return (result == ESP_OK && *bytesRead > 0);
 }
