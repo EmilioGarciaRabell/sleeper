@@ -89,7 +89,7 @@ def websocket_route(ws):
             # Evaluate VAD
             speech_prob = isSpeech(data, frame_rate)
 
-            if speech_prob >= 0.8:
+            if speech_prob >= 0.5:
                 last_speech_time = current_time
                 if not has_spoken:
                     print("Speech detected! Now tracking for silence.")
