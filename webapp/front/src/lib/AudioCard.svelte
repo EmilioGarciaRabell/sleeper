@@ -1,17 +1,47 @@
 <script>
   // Expose props so you can pass dynamic data later
-  export let time = "10:24 AM";
-  export let text = "Note content goes here...";
+  let { time,text,transcript } = $props();
+
+  let file_text = $state.raw();
+  
+  $effect(() => {
+    async function showTranscript(){
+    const url = import.meta.env.VITE_BACKEND_URL
+    console.log(url)
+    const postURL = `${url}/transcription/${transcript}.txt`;
+    try{
+      const response = await fetch(postURL)
+      console.log(response)
+      if (!response.ok){
+          console.log("error")
+          return 
+      }
+      console.log(response)
+      const res = await response.text()
+      file_text = res
+      console.log(res)
+      
+    }catch (error){
+      console.log("errrorrr")
+      console.log(error)
+    }
+    }
+    showTranscript()
+    
+  });
+  
 </script>
 
 <div class="audio-card">
   <span class="time">{time}</span>
-  <p>{text}</p>
+  <p>Post Number: {text}</p>
+  <p>Transcription: {file_text}</p>
   
   <!-- Custom audio player area to build out -->
   <div class="player-stub">
     <button>▶</button>
-    <div class="track"></div>
+    <div class="track">
+    </div>
   </div>
 </div>
 

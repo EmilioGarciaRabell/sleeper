@@ -4,12 +4,14 @@ import time
 import uuid
 import wave
 
+from flask import abort, send_from_directory
 import numpy as np
 import torch
 from flask_sock import Sock
 from redis import Redis
 from rq import Queue
 from silero_vad import load_silero_vad
+from flask_cors import CORS
 
 from app import create_app
 
@@ -17,6 +19,27 @@ model = load_silero_vad()
 
 flask_app = create_app()
 sock = Sock(flask_app)
+CORS(flask_app)
+
+
+##added this to expose storage folders and add them to frontend
+
+AUDIO_FILES = os.path.join(flask_app.root_path, 'storage','audio_files')
+@flask_app.route('/audio/<path:filename>')
+def serve_audio(filename):
+    try:
+        return send_from_directory(AUDIO_FILES, filename)
+    except FileNotFoundError:
+        abort(404)
+
+TRANSCRIPTION = os.path.join(flask_app.root_path, 'storage','transcription')
+@flask_app.route('/transcription/<path:filename>')
+def serve_transcription(filename):
+    try:
+        return send_from_directory(TRANSCRIPTION, filename)
+    except FileNotFoundError:
+        abort(404)
+
 
 redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
 redis_conn = Redis.from_url(redis_url)
@@ -34,6 +57,7 @@ def process_bytes(input_bytes):
 def isSpeech(chunk, sampling_rate):
     tensor = process_bytes(chunk)
     return model(tensor, sampling_rate).item()
+
 @sock.route('/receive_data')
 def websocket_route(ws):
     channels = 1
